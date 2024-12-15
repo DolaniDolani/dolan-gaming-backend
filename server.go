@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/DolaniDolani/dolan-gaming/db"
+	"github.com/DolaniDolani/dolan-gaming/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -20,25 +21,10 @@ func main() {
 	db.ConnectDB()
 
 	serverPort := os.Getenv("SERVER_PORT")
-
 	server := gin.Default()
 
-	server.GET("/test", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "It just works",
-		})
-	})
-
-	server.GET("/test-db", func(ctx *gin.Context) {
-		version := " "
-		err := db.Pool.QueryRow(ctx, "SELECT version()").Scan(&version)
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(500, gin.H{"error": "Database access error"})
-			return
-		}
-		ctx.JSON(200, gin.H{"database_version": version})
-	})
+	routes.RegisterGameRoutes(server)
+	routes.RegisterTestRoutes(server)
 
 	server.Run(":" + serverPort)
 

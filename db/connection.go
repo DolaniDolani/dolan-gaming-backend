@@ -1,14 +1,15 @@
 package db
 
 import (
-	"context"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var Pool *pgxpool.Pool
+// DB contains database connection instance
+var DB *gorm.DB
 
 // ConnectDB create a connection to the PostgreSQL database
 func ConnectDB() {
@@ -16,7 +17,7 @@ func ConnectDB() {
 	var err error
 
 	// Create connection pool
-	Pool, err = pgxpool.New(context.Background(), databaseUrl)
+	DB, err = gorm.Open(postgres.Open(databaseUrl), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Could not connect do PostgreSQL database: %v", err)
 	} else {
