@@ -35,6 +35,31 @@ func GetGameByID(ctx *gin.Context) {
 	var game models.Game
 
 	err := db.DB.First(&game, "id = ?", id).Error
-	utils.RespondWithErrorIfNotNil(ctx, 500, "Error while fetching game", err)
+	utils.RespondWithErrorIfNotNil(ctx, 404, "Game not found", err)
 	ctx.JSON(200, game)
+}
+
+func UpdateGame(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var game models.Game
+
+	err := ctx.ShouldBindBodyWithJSON(&game)
+	utils.RespondWithErrorIfNotNil(ctx, http.StatusBadRequest, "Invalid data", err)
+
+	err = db.DB.Where("id = ?", id).Updates(&game).Error
+	utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while updating game", err)
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Game updated succesfully", "game": game})
+}
+func DeleteGame(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var game models.Game
+
+	err := ctx.ShouldBindBodyWithJSON(&game)
+	utils.RespondWithErrorIfNotNil(ctx, http.StatusBadRequest, "Invalid Data", err)
+
+	err = db.DB.Where("id = ?", id).Delete(&game).Error
+	utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while deleting game", err)
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Game deleted succesfully"})
 }

@@ -7,6 +7,8 @@ import (
 
 func RegisterGameRoutes(router *gin.Engine) {
 	router.POST("games/add", controllers.AddGame)
-	router.GET("games/get/all", controllers.GetAllGames)
-	router.GET("games/get/:id", controllers.GetGameByID)
+	router.GET("games", controllers.GetAllGames)
+	router.GET("games/:id", controllers.GetGameByID)
+	router.PUT("games/:id", controllers.UpdateGame)
+	router.DELETE("games/:id", controllers.DeleteGame)
 }
