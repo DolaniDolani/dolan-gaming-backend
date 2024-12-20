@@ -33,6 +33,7 @@ func main() {
 	}))
 
 	routes.RegisterGameRoutes(server)
+	routes.RegisterPurchaseRoutes(server)
 	routes.RegisterTestRoutes(server)
 
 	server.Run(":" + serverPort)

@@ -13,4 +13,5 @@ type Game struct {
 	PurchasePrice *float64   `json:"purchase_price"`
 	SaleDate      *time.Time `json:"sale_date"`
 	SalePrice     *float64   `json:"sale_price"`
+	PurchaseID    int64      `json:"purchase_id`
 }

@@ -9,9 +9,10 @@ func RespondWithError(ctx *gin.Context, code int, message string, details error)
 	})
 }
 
-func RespondWithErrorIfNotNil(ctx *gin.Context, code int, message string, details error) {
+func RespondWithErrorIfNotNil(ctx *gin.Context, code int, message string, details error) bool {
 	if details != nil {
 		RespondWithError(ctx, code, message, details)
-		return
+		return true
 	}
+	return false
 }

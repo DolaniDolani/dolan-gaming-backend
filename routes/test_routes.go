@@ -15,10 +15,14 @@ func RegisterTestRoutes(router *gin.Engine) {
 
 	router.GET("/test-db", func(ctx *gin.Context) {
 		sqlDB, err := db.DB.DB()
-		utils.RespondWithErrorIfNotNil(ctx, 500, "Error while testing database", err)
+		if utils.RespondWithErrorIfNotNil(ctx, 500, "Error while testing database", err) {
+			return
+		}
 
 		err = sqlDB.Ping()
-		utils.RespondWithErrorIfNotNil(ctx, 500, "Error while pinging database", err)
+		if utils.RespondWithErrorIfNotNil(ctx, 500, "Error while pinging database", err) {
+			return
+		}
 
 		ctx.JSON(200, gin.H{"message": "Database connected succesfully"})
 	})

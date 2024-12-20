@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/DolaniDolani/dolan-gaming/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,4 +25,13 @@ func ConnectDB() {
 		log.Println("Database connected")
 	}
 
+	migrateDB()
+
+}
+
+func migrateDB() {
+	err := DB.AutoMigrate(&models.Purchase{}, &models.Game{})
+	if err != nil {
+		log.Fatalf("Error during database migration: %v", err)
+	}
 }
