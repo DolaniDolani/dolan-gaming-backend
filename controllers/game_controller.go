@@ -43,6 +43,7 @@ func GetGameByID(ctx *gin.Context) {
 	if utils.RespondWithErrorIfNotNil(ctx, 404, "Game not found", err) {
 		return
 	}
+
 	ctx.JSON(200, game)
 }
 

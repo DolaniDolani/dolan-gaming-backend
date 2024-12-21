@@ -47,3 +47,33 @@ func GetAllPurchases(ctx *gin.Context) {
 
 	ctx.JSON(200, purchases)
 }
+
+func GetPurchaseById(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	var purchase models.Purchase
+
+	err := db.DB.First(&purchase, "id = ?", id).Error
+	if utils.RespondWithErrorIfNotNil(ctx, 404, "Purchase not found", err) {
+		return
+	}
+
+	ctx.JSON(200, purchase)
+}
+
+func UpdatePurchase(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	var purchase models.Purchase
+
+	err := ctx.ShouldBindBodyWithJSON(&purchase)
+	if utils.RespondWithErrorIfNotNil(ctx, http.StatusBadRequest, "Invalid data", err) {
+		return
+	}
+
+	err = db.DB.Where("id = ?", id).Updates(&purchase).Error
+	if utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while updating game", err) {
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase updated succesfully", "purchase": purchase})
+}
