@@ -40,7 +40,7 @@ func purchaseCheck(purchase models.Purchase) error {
 
 func GetAllPurchases(ctx *gin.Context) {
 	var purchases []models.Purchase
-	err := db.DB.Find(&purchases).Error
+	err := db.DB.Preload("Games").Find(&purchases).Error
 	if utils.RespondWithErrorIfNotNil(ctx, 500, "Error while fetching purchases", err) {
 		return
 	}
@@ -53,7 +53,7 @@ func GetPurchaseById(ctx *gin.Context) {
 
 	var purchase models.Purchase
 
-	err := db.DB.First(&purchase, "id = ?", id).Error
+	err := db.DB.Preload("Games").First(&purchase, "id = ?", id).Error
 	if utils.RespondWithErrorIfNotNil(ctx, 404, "Purchase not found", err) {
 		return
 	}
@@ -75,5 +75,17 @@ func UpdatePurchase(ctx *gin.Context) {
 	if utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while updating game", err) {
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase updated succesfully", "purchase": purchase})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase updated successfully", "purchase": purchase})
+}
+
+func DeletePurchase(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	var purchase models.Purchase
+
+	err := db.DB.Where("id = ?", id).Delete(&purchase).Error
+	if utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while deleting purchase", err) {
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase deleted successfully", "purchase": purchase})
 }
