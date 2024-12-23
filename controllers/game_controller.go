@@ -74,3 +74,17 @@ func DeleteGame(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Game deleted successfully"})
 }
+
+func GetGameByPurchaseId(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var games []models.Game
+	err := db.DB.Where("purchase_id = ?", id).Find(&games).Error
+	if utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while fetching games", err) {
+		return
+	}
+	if len(games) == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "No game where found for this purchase"})
+		return
+	}
+	ctx.JSON(http.StatusOK, games)
+}
