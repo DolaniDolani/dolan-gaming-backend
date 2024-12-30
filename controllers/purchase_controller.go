@@ -3,11 +3,13 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/DolaniDolani/dolan-gaming/db"
 	"github.com/DolaniDolani/dolan-gaming/models"
 	"github.com/DolaniDolani/dolan-gaming/utils"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func CreatePurchase(ctx *gin.Context) {
@@ -60,22 +62,59 @@ func GetPurchaseById(ctx *gin.Context) {
 
 	ctx.JSON(200, purchase)
 }
-
 func UpdatePurchase(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	var purchase models.Purchase
 
-	err := ctx.ShouldBindBodyWithJSON(&purchase)
-	if utils.RespondWithErrorIfNotNil(ctx, http.StatusBadRequest, "Invalid data", err) {
+	// Leggi il body della richiesta
+	if err := ctx.ShouldBindJSON(&purchase); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dati non validi", "details": err.Error()})
 		return
 	}
 
-	err = db.DB.Where("id = ?", id).Updates(&purchase).Error
-	if utils.RespondWithErrorIfNotNil(ctx, http.StatusInternalServerError, "Error while updating game", err) {
+	// Assegna l'ID passato nell'URL al modello
+	purchase.ID = idAsInt(id)
+
+	// Aggiorna il Purchase e i giochi in una transazione
+	err := db.DB.Transaction(func(tx *gorm.DB) error {
+		// Aggiorna il Purchase
+		if err := tx.Model(&purchase).Where("id = ?", purchase.ID).Updates(purchase).Error; err != nil {
+			return err
+		}
+
+		// Aggiorna i giochi associati
+		for _, game := range purchase.Games {
+			game.PurchaseID = purchase.ID
+			if game.ID == 0 {
+				// Nuovo gioco
+				if err := tx.Create(&game).Error; err != nil {
+					return err
+				}
+			} else {
+				// Gioco esistente
+				if err := tx.Model(&game).Where("id = ?", game.ID).Updates(&game).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+
+	// Gestisci errori di transazione
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Errore durante l'aggiornamento", "details": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase updated successfully", "purchase": purchase})
+
+	// Risposta di successo
+	ctx.JSON(http.StatusOK, gin.H{"message": "Purchase aggiornato con successo", "purchase": purchase})
+}
+
+func idAsInt(id string) int64 {
+	intID, _ := strconv.ParseInt(id, 10, 64)
+	return intID
 }
 
 func DeletePurchase(ctx *gin.Context) {
